@@ -11,6 +11,7 @@ import pytest
 ROOT = pathlib.Path(__file__).parent.parent.parent
 HTML_FILE = ROOT / "index.html"
 CSS_FILE = ROOT / "styles.css"
+JS_FILE = ROOT / "scripts.js"
 
 
 class _AnchorCollector(HTMLParser):
@@ -68,3 +69,25 @@ class TestHomepageStructure:
 
     def test_css_linked(self, html_source):
         assert 'href="styles.css"' in html_source
+
+    def test_footer_year_span_exists(self, html_source):
+        assert 'id="footer-year"' in html_source, (
+            "<span id=\"footer-year\"> must exist for JS to populate current year"
+        )
+
+    def test_scripts_js_linked(self, html_source):
+        assert 'src="scripts.js"' in html_source, (
+            "scripts.js must be linked from index.html"
+        )
+
+    def test_scripts_js_file_exists(self):
+        assert JS_FILE.exists(), "scripts.js must exist at project root"
+
+    def test_footer_has_fallback_year(self, html_source):
+        match = re.search(
+            r'<span id="footer-year">\s*(\b20\d{2}\b)\s*</span>',
+            html_source,
+        )
+        assert match, (
+            "Footer year span must contain a 4-digit fallback year (e.g. 2026)"
+        )
