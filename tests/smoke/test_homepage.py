@@ -127,3 +127,34 @@ class TestHomepageStructure:
         assert "scrollTo" in js_source, (
             "scripts.js must call window.scrollTo for smooth scroll"
         )
+
+    def test_viewport_meta_present(self, html_source):
+        assert '<meta name="viewport"' in html_source, (
+            "Responsive viewport meta tag must be present in <head>"
+        )
+
+    def test_nav_links_match_section_ids(self, html_source, parsed):
+        import re
+        block = re.search(
+            r'<ul class="nav-links">(.*?)</ul>', html_source, re.S
+        )
+        assert block, "<ul class=\"nav-links\"> block not found"
+        hrefs = re.findall(r'href="#([^"]+)"', block.group(1))
+        assert hrefs, "nav-links must contain at least one anchor href"
+        missing = [h for h in hrefs if h not in parsed.ids]
+        assert not missing, (
+            f"Nav links point to missing section ids: {missing}"
+        )
+
+    def test_scripts_loaded_with_defer(self, html_source):
+        assert '<script defer src="scripts.js"></script>' in html_source, (
+            "scripts.js must be loaded with defer attribute"
+        )
+
+    def test_css_design_tokens_defined(self, css_source):
+        assert '--color-primary:' in css_source, (
+            "styles.css must define --color-primary design token"
+        )
+        assert '--color-bg:' in css_source, (
+            "styles.css must define --color-bg design token"
+        )
