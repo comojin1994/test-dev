@@ -44,6 +44,16 @@ def parsed(html_source) -> _AnchorCollector:
     return collector
 
 
+@pytest.fixture(scope="module")
+def css_source() -> str:
+    return CSS_FILE.read_text(encoding="utf-8")
+
+
+@pytest.fixture(scope="module")
+def js_source() -> str:
+    return JS_FILE.read_text(encoding="utf-8")
+
+
 @pytest.mark.smoke
 class TestHomepageStructure:
     def test_html_file_exists(self):
@@ -90,4 +100,30 @@ class TestHomepageStructure:
         )
         assert match, (
             "Footer year span must contain a 4-digit fallback year (e.g. 2026)"
+        )
+
+    def test_back_to_top_button_present(self, html_source):
+        assert 'id="back-to-top"' in html_source, (
+            "<button id=\"back-to-top\"> must exist in index.html"
+        )
+
+    def test_back_to_top_has_aria_label(self, html_source):
+        assert 'aria-label="맨 위로 이동"' in html_source, (
+            "Back-to-top button must expose Korean aria-label for a11y"
+        )
+
+    def test_back_to_top_styles_defined(self, css_source):
+        assert "#back-to-top" in css_source, (
+            "styles.css must define #back-to-top rules"
+        )
+        assert ".is-visible" in css_source, (
+            "styles.css must define .is-visible toggle rule"
+        )
+
+    def test_back_to_top_script_logic(self, js_source):
+        assert "back-to-top" in js_source, (
+            "scripts.js must reference back-to-top element"
+        )
+        assert "scrollTo" in js_source, (
+            "scripts.js must call window.scrollTo for smooth scroll"
         )
